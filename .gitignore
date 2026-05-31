@@ -1,0 +1,13 @@
+data/raw/
+data/processed/
+.streamlit/secrets.toml
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+*.pkl
+.env
+streamlit.log
+patch_*.py
+pptx_thumbs/
+make_presentation*.js
+reports/
