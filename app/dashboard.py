@@ -21,7 +21,7 @@ st.set_page_config(
 st.markdown(NBA_CSS, unsafe_allow_html=True)
 
 # ── Данные ────────────────────────────────────────────────────────────────────
-DATA_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "processed", "players_clustered.csv")
+DATA_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)), "..", "data", "processed", "players_clustered.csv")
 
 @st.cache_data
 def load_data():
