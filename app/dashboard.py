@@ -1530,14 +1530,15 @@ elif page == "💵 Контракт":
             df_cv_f = df_cv_f[df_cv_f["games_played"] >= min_games]
         fig_csl = plot_salary_leaderboard(df_cv_f, n=top_n_cv)
         st.plotly_chart(fig_csl, use_container_width=True, key="cv_salary_lead")
-        chart_caption("Рейтинг зарплат: реальная зарплата vs справедливая стоимость. Зелёные полосы — выгодные контракты, красные — переплата.")
+        chart_caption("Рейтинг справедливой рыночной стоимости игроков. Цвет полосы = тир контракта: 🔵 синий — Стартер, 🟡 золотой — Ролевой, ⚪ серый — Минималка.")
 
     with tab_surplus:
         fig_surp = plot_value_surplus(df_cv)
         st.plotly_chart(fig_surp, use_container_width=True, key="cv_surplus")
         chart_caption(
-            "**Зелёный** — игрок недооценён (Trade Value выше рыночной зарплаты). "
-            "**Красный** — переоценён (зарплата выше реальной ценности)."
+            "Surplus Value = справедливая стоимость − реальная зарплата. "
+            "🟢 Зелёный (положительный) — клуб экономит, игрок стоит больше своей зарплаты. "
+            "🔵 Синий — рыночная цена справедлива. 🔴 Красный — переплата."
         )
 
     with tab_scatter_c:
