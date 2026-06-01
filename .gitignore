@@ -1,6 +1,7 @@
 data/raw/
 data/processed/
 .streamlit/secrets.toml
+!.streamlit/secrets.toml.example
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
