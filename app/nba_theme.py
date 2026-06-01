@@ -855,5 +855,30 @@ div[data-testid="stAlert"]:has([aria-label*="info"]),
     background: rgba(255,255,255,0.07) !important;
     border-radius: 4px !important;
 }
+
+/* ── Multiselect tags ──────────────────────────────────────────────────────── */
+[data-testid="stMultiSelect"] span[data-baseweb="tag"] {
+    background-color: #1D428A !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255,255,255,0.25) !important;
+    border-radius: 6px !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+}
+[data-testid="stMultiSelect"] span[data-baseweb="tag"] span {
+    color: #ffffff !important;
+}
+[data-testid="stMultiSelect"] span[data-baseweb="tag"] [role="presentation"] svg {
+    fill: rgba(255,255,255,0.7) !important;
+}
+[data-testid="stMultiSelect"] [data-baseweb="select"] > div {
+    background-color: #0d1825 !important;
+    border-color: rgba(200,16,46,0.4) !important;
+}
+[data-testid="stMultiSelect"] label {
+    color: #8b9ab5 !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+}
 </style>
 """
