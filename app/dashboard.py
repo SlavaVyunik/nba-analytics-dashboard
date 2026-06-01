@@ -1,4 +1,4 @@
-import sys, os
+﻿import sys, os
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 import streamlit as st
@@ -96,6 +96,15 @@ def page_hint(lines: list) -> None:
     _hint_key = f"hint_{abs(hash(lines[0][:40] if lines else ''))}"
     with st.expander("💡 Что здесь и зачем?", expanded=False, key=_hint_key):
         st.markdown("\n\n".join(lines))
+
+
+def chart_caption(text: str) -> None:
+    """Visible chart caption for dark theme."""
+    st.html(
+        f"<div style='font-size:12px;color:#8b9ab5;margin-top:-8px;"
+        f"margin-bottom:8px;padding:4px 8px;border-left:2px solid #2a3a5c;"
+        f"line-height:1.5'>{text}</div>"
+    )
 
 
 # ── ML-кэш ────────────────────────────────────────────────────────────────────
@@ -284,12 +293,12 @@ if page == "🏠 Обзор лиги":
     ])
 
     st.plotly_chart(umap_scatter(df_f), use_container_width=True, key="umap_main")
-    st.caption("UMAP-карта: каждая точка — игрок, цвет — архетип (кластер). Близкие точки = похожий статпрофиль.")
+    chart_caption("UMAP-карта: каждая точка — игрок, цвет — архетип (кластер). Близкие точки = похожий статпрофиль.")
 
     col_l, col_r = st.columns(2)
     with col_l:
         st.plotly_chart(pts_vs_ast(df_f), use_container_width=True, key="pts_ast_main")
-        st.caption("Очки vs Передачи: позволяет найти универсальных игроков с высоким вкладом в обоих показателях.")
+        chart_caption("Очки vs Передачи: позволяет найти универсальных игроков с высоким вкладом в обоих показателях.")
     with col_r:
         if len(df_f) > 0:
             target = (
@@ -297,7 +306,7 @@ if page == "🏠 Обзор лиги":
                 else df_f.groupby("cluster_name")["PTS"].mean().idxmax()
             )
             st.plotly_chart(top_players_bar(df_f, target), use_container_width=True, key="top_bar_main")
-            st.caption("Топ-5 игроков по выбранному показателю в текущей фильтрации.")
+            chart_caption("Топ-5 игроков по выбранному показателю в текущей фильтрации.")
         else:
             st.info("Нет данных для выбранных фильтров — измените параметры в боковой панели.")
 
@@ -402,12 +411,12 @@ elif page == "🏀 Карточка игрока":
                     if not higher: p = 100 - p
                     html += stat_bar_html(label, val, p, fmt)
             st.html(html)
-            st.caption("Перцентиль относительно всех игроков лиги")
+            chart_caption("Перцентиль относительно всех игроков лиги")
 
         with col_radar:
             st.plotly_chart(radar_chart(df, row["cluster_name"]),
                             use_container_width=True, key=f"radar_player_{player_name}")
-            st.caption("Radar-диаграмма: форма паутины показывает баланс навыков — чем больше площадь, тем разностороннее игрок.")
+            chart_caption("Radar-диаграмма: форма паутины показывает баланс навыков — чем больше площадь, тем разностороннее игрок.")
 
         # ── Вкладки: Shot Chart / Trade Value / Похожие / AI ─────────────────
         st.divider()
@@ -425,7 +434,7 @@ elif page == "🏀 Карточка игрока":
                                 key="sc_n_player")
             fig_sc = shot_chart(row, mode=mode, n_shots=n_shots)
             st.plotly_chart(fig_sc, use_container_width=False, key=f"shot_chart_{player_name}")
-            st.caption(
+            chart_caption(
                 "⚠️ Карта бросков синтетическая — построена на основе статистики "
                 "и архетипа игрока. Реальные координаты бросков доступны через "
                 "NBA ShotChartDetail API при наличии сети."
@@ -461,7 +470,7 @@ elif page == "🏀 Карточка игрока":
 
             fig_tv = plot_trade_breakdown(row_tv)
             st.plotly_chart(fig_tv, use_container_width=True, key=f"tv_breakdown_{player_name}")
-            st.caption("Trade Value: вклад каждого показателя в итоговую ценность игрока для обмена (0–100).")
+            chart_caption("Trade Value: вклад каждого показателя в итоговую ценность игрока для обмена (0–100).")
 
         with tab_sim:
             similar = find_similar(df, player_name, n=6)
@@ -627,11 +636,11 @@ elif page == "⚔️ Head-to-Head":
             with rc1:
                 st.plotly_chart(radar_chart(df, r1["cluster_name"]),
                                 use_container_width=True, key=f"radar_h2h_p1_{p1}")
-                st.caption("Radar игрока 1: форма паутины отражает баланс ключевых навыков относительно среднего по лиге.")
+                chart_caption("Radar игрока 1: форма паутины отражает баланс ключевых навыков относительно среднего по лиге.")
             with rc2:
                 st.plotly_chart(radar_chart(df, r2["cluster_name"]),
                                 use_container_width=True, key=f"radar_h2h_p2_{p2}")
-                st.caption("Radar игрока 2: сравните форму с соседним графиком — где одна паутина больше другой, там игрок сильнее.")
+                chart_caption("Radar игрока 2: сравните форму с соседним графиком — где одна паутина больше другой, там игрок сильнее.")
 
         with tab_sc:
             from src.shot_chart import shot_chart
@@ -639,11 +648,11 @@ elif page == "⚔️ Head-to-Head":
             with sc1:
                 st.plotly_chart(shot_chart(r1, mode="heat", n_shots=300),
                                 use_container_width=False, key=f"sc_h2h_{p1}")
-                st.caption("Shot Chart игрока 1: зоны активности бросков. Чем теплее цвет — тем больше попыток из этой зоны.")
+                chart_caption("Shot Chart игрока 1: зоны активности бросков. Чем теплее цвет — тем больше попыток из этой зоны.")
             with sc2:
                 st.plotly_chart(shot_chart(r2, mode="heat", n_shots=300),
                                 use_container_width=False, key=f"sc_h2h_{p2}")
-                st.caption("Shot Chart игрока 2: сравните зоны с игроком 1 — видны различия в стиле атаки.")
+                chart_caption("Shot Chart игрока 2: сравните зоны с игроком 1 — видны различия в стиле атаки.")
 
 
 # ════════════════════════════════════════════════════════════════════════════════
@@ -737,7 +746,7 @@ elif page == "📊 Кластеры":
     )
     _fig_sizes.update_layout(coloraxis_showscale=False, xaxis_title="", showlegend=False)
     st.plotly_chart(_fig_sizes, use_container_width=True, key="cluster_sizes_bar")
-    st.caption("Размер кластеров: сколько игроков в каждом архетипе. Доминирующий кластер — самый распространённый тип игрока в лиге.")
+    chart_caption("Размер кластеров: сколько игроков в каждом архетипе. Доминирующий кластер — самый распространённый тип игрока в лиге.")
 
     section_title("Radar-профили кластеров", "🎯")
     selected = st.multiselect("Выбери кластеры",
@@ -748,7 +757,7 @@ elif page == "📊 Кластеры":
         with rcols[i % 3]:
             st.plotly_chart(radar_chart(df, cl), use_container_width=True,
                             key=f"radar_cluster_{i}_{cl}")
-            st.caption("Средний профиль архетипа: radar показывает типичные сильные и слабые стороны игроков данного кластера.")
+            chart_caption("Средний профиль архетипа: radar показывает типичные сильные и слабые стороны игроков данного кластера.")
 
 
 # ════════════════════════════════════════════════════════════════════════════════
@@ -816,7 +825,7 @@ elif page == "💎 Аномалии":
             )
             fig_gems.update_coloraxes(showscale=False)
             st.plotly_chart(fig_gems, use_container_width=True, key="gems_bar")
-            st.caption("Скрытые таланты: игроки с аномально высокой эффективностью относительно их статуса. Кандидаты на повышение роли.")
+            chart_caption("Скрытые таланты: игроки с аномально высокой эффективностью относительно их статуса. Кандидаты на повышение роли.")
         else:
             st.info("Нет игроков-аномалий в выбранном наборе данных.")
 
@@ -846,7 +855,7 @@ elif page == "💎 Аномалии":
             )
             fig_over.update_coloraxes(showscale=False)
             st.plotly_chart(fig_over, use_container_width=True, key="over_bar")
-            st.caption("Переоценённые игроки: высокий статус при низкой реальной эффективности — потенциальные кандидаты на пересмотр контракта.")
+            chart_caption("Переоценённые игроки: высокий статус при низкой реальной эффективности — потенциальные кандидаты на пересмотр контракта.")
         else:
             st.info("Переоценённых не обнаружено.")
 
@@ -873,7 +882,7 @@ elif page == "💎 Аномалии":
                 template="nba_dark", height=480,
             )
             st.plotly_chart(fig_sc, use_container_width=True, key="anomaly_umap")
-            st.caption("UMAP + аномалии: красные точки — игроки с нетипичным для своего кластера статпрофилем. Чем краснее, тем аномальнее.")
+            chart_caption("UMAP + аномалии: красные точки — игроки с нетипичным для своего кластера статпрофилем. Чем краснее, тем аномальнее.")
         else:
             st.warning("UMAP-координаты не найдены в данных.")
 
@@ -887,7 +896,7 @@ elif page == "💎 Аномалии":
             template="nba_dark", height=320,
         )
         st.plotly_chart(fig_hist, use_container_width=True, key="anomaly_hist")
-        st.caption("Распределение аномальности: чем дальше влево от нуля, тем более нестандартен игрок. Хвост слева — уникальные таланты или проблемные контракты.")
+        chart_caption("Распределение аномальности: чем дальше влево от нуля, тем более нестандартен игрок. Хвост слева — уникальные таланты или проблемные контракты.")
 
 
 # ════════════════════════════════════════════════════════════════════════════════
@@ -940,7 +949,7 @@ elif page == "🔮 Прогноз":
             names  = df[name_col].values
             fig_cv = plot_actual_vs_predicted(y_true, y_cv, names)
             st.plotly_chart(fig_cv, use_container_width=True, key="cv_scatter")
-            st.caption(
+            chart_caption(
                 "Каждая точка — игрок. Серая линия — идеальное предсказание. "
                 "Цвет: зелёный = точное, красный = ошибка. "
                 "Оценка проводится вне обучающих данных (кросс-валидация)."
@@ -951,7 +960,7 @@ elif page == "🔮 Прогноз":
             fig_imp = plot_feature_importance(model, feats)
             if fig_imp:
                 st.plotly_chart(fig_imp, use_container_width=True, key="feat_imp")
-                st.caption(
+                chart_caption(
                     "Feature Importance (XGBoost/GB). Высокое значение = "
                     "признак сильно влияет на прогноз очков."
                 )
@@ -1060,13 +1069,13 @@ elif page == "💰 Trade Value":
 
         fig_lb = plot_trade_leaderboard(df_tv_f, top_n=top_n_tv)
         st.plotly_chart(fig_lb, use_container_width=True, key="tv_leaderboard")
-        st.caption("Рейтинг Trade Value: топ игроков по ценности обмена (0–100). Учитывает возраст, статистику, контракт и риск травм.")
+        chart_caption("Рейтинг Trade Value: топ игроков по ценности обмена (0–100). Учитывает возраст, статистику, контракт и риск травм.")
 
     with tab_age:
         fig_age = plot_value_vs_age(df_tv)
         if fig_age:
             st.plotly_chart(fig_age, use_container_width=True, key="tv_age_scatter")
-            st.caption(
+            chart_caption(
                 "Размер точки — очки за игру. "
                 "Синяя зона — пиковый возраст (25–30 лет). "
                 "Ищи молодых игроков с высоким Trade Value — потенциальные звёзды."
@@ -1079,7 +1088,7 @@ elif page == "💰 Trade Value":
         with col_pie:
             fig_tiers = plot_trade_tiers(df_tv)
             st.plotly_chart(fig_tiers, use_container_width=True, key="tv_tiers_pie")
-            st.caption("Распределение по уровням: доля игроков в каждом TV-тире — от элиты (≥70) до ролевых игроков (<30).")
+            chart_caption("Распределение по уровням: доля игроков в каждом TV-тире — от элиты (≥70) до ролевых игроков (<30).")
         with col_info:
             st.markdown("#### Легенда тиров")
             tiers_info = [
@@ -1156,7 +1165,7 @@ elif page == "💰 Trade Value":
             sc3.metric("Ранг", f"#{rank_s}")
             fig_bd = plot_trade_breakdown(sr)
             st.plotly_chart(fig_bd, use_container_width=True, key=f"tv_bd_{search_player}")
-            st.caption("Декомпозиция Trade Value: вклад каждого фактора в итоговую оценку. Длина полосы = важность компонента.")
+            chart_caption("Декомпозиция Trade Value: вклад каждого фактора в итоговую оценку. Длина полосы = важность компонента.")
 
 
 # ════════════════════════════════════════════════════════════════════════════════
@@ -1204,7 +1213,7 @@ elif page == "📈 Развитие":
             c4.metric("📅 До пика",
                       f"{summary['years_to_peak']:+.1f} лет" if summary.get("years_to_peak") is not None else "—")
 
-            st.caption(f"_{summary.get('phase_desc','')}_")
+            chart_caption(f"_{summary.get('phase_desc','')}_")
 
             if summary.get("stat_peaks"):
                 st.markdown("**Пиковый возраст по показателям:**")
@@ -1226,7 +1235,7 @@ elif page == "📈 Развитие":
             )
             fig_dc = plot_development_curve(df, dev_player, stat=stat_choice)
             st.plotly_chart(fig_dc, use_container_width=True, key=f"dev_curve_{dev_player}_{stat_choice}")
-            st.caption(
+            chart_caption(
                 "Серая полоса — среднее ±σ по лиге для данного возраста. "
                 "Красная звезда — текущее положение игрока. "
                 "Пунктир — прогнозируемый пик."
@@ -1235,7 +1244,7 @@ elif page == "📈 Развитие":
         with tab_multi:
             fig_multi = plot_multi_stat_curves(df, dev_player)
             st.plotly_chart(fig_multi, use_container_width=True, key=f"dev_multi_{dev_player}")
-            st.caption("Мультистатная динамика: несколько показателей на одном графике — удобно видеть, какие навыки растут вместе, а какие снижаются.")
+            chart_caption("Мультистатная динамика: несколько показателей на одном графике — удобно видеть, какие навыки растут вместе, а какие снижаются.")
 
         # ── Лига: топ игроков у пика ──────────────────────────────────────────
         st.divider()
@@ -1299,12 +1308,12 @@ elif page == "🏥 Риск травмы":
             df_ir_f = df_ir_f[df_ir_f["games_played"] >= min_games]
         fig_irl = plot_risk_leaderboard(df_ir_f, n=top_n_ir)
         st.plotly_chart(fig_irl, use_container_width=True, key="ir_leaderboard")
-        st.caption("Топ по риску травм: игроки с наибольшим расчётным риском. Красные — высокий риск (>70), жёлтые — средний.")
+        chart_caption("Топ по риску травм: игроки с наибольшим расчётным риском. Красные — высокий риск (>70), жёлтые — средний.")
 
     with tab_dist:
         fig_ird = plot_risk_distribution(df_ir)
         st.plotly_chart(fig_ird, use_container_width=True, key="ir_distribution")
-        st.caption(
+        chart_caption(
             "Распределение индекса риска по всей лиге. "
             "Зоны: зелёная — безопасно, красная — высокий риск."
         )
@@ -1312,7 +1321,7 @@ elif page == "🏥 Риск травмы":
     with tab_scatter:
         fig_irv = plot_risk_vs_value(df_ir)
         st.plotly_chart(fig_irv, use_container_width=True, key="ir_vs_value")
-        st.caption(
+        chart_caption(
             "Игроки в правом нижнем углу — высокая ценность при низком риске (идеальные). "
             "Левый верхний угол — высокий риск при низкой ценности (проблемные)."
         )
@@ -1343,7 +1352,7 @@ elif page == "🏥 Риск травмы":
                 # Breakdown
                 fig_irb = plot_risk_breakdown(row_ir)
                 st.plotly_chart(fig_irb, use_container_width=True, key=f"ir_breakdown_{ir_player}")
-                st.caption("Факторы риска травм: вклад возраста, нагрузки, истории травм и физических данных в итоговый риск-балл.")
+                chart_caption("Факторы риска травм: вклад возраста, нагрузки, истории травм и физических данных в итоговый риск-балл.")
 
                 # Рекомендации
                 section_title("Рекомендации", "💡", "#FFC72C")
@@ -1454,17 +1463,17 @@ elif page == "🏗️ Состав":
         with tab_court:
             fig_court = plot_lineup_court(lineup_result)
             st.plotly_chart(fig_court, use_container_width=True, key="tb_court")
-            st.caption("Расстановка на площадке: позиции выбранных игроков. Позволяет визуально оценить баланс состава по зонам.")
+            chart_caption("Расстановка на площадке: позиции выбранных игроков. Позволяет визуально оценить баланс состава по зонам.")
 
         with tab_bars:
             fig_bars = plot_lineup_bars(lineup_result)
             st.plotly_chart(fig_bars, use_container_width=True, key="tb_bars")
-            st.caption("Сравнение показателей состава: столбцы отражают суммарный вклад команды по каждой категории.")
+            chart_caption("Сравнение показателей состава: столбцы отражают суммарный вклад команды по каждой категории.")
 
         with tab_radar:
             fig_rad = plot_lineup_radar(lineup_result)
             st.plotly_chart(fig_rad, use_container_width=True, key="tb_radar")
-            st.caption("Radar состава: форма паутины команды. Идеальный состав — равномерно большая фигура без явных провалов.")
+            chart_caption("Radar состава: форма паутины команды. Идеальный состав — равномерно большая фигура без явных провалов.")
 
     except Exception as e:
         st.error(f"Ошибка построения состава: {e}")
@@ -1521,12 +1530,12 @@ elif page == "💵 Контракт":
             df_cv_f = df_cv_f[df_cv_f["games_played"] >= min_games]
         fig_csl = plot_salary_leaderboard(df_cv_f, n=top_n_cv)
         st.plotly_chart(fig_csl, use_container_width=True, key="cv_salary_lead")
-        st.caption("Рейтинг зарплат: реальная зарплата vs справедливая стоимость. Зелёные полосы — выгодные контракты, красные — переплата.")
+        chart_caption("Рейтинг зарплат: реальная зарплата vs справедливая стоимость. Зелёные полосы — выгодные контракты, красные — переплата.")
 
     with tab_surplus:
         fig_surp = plot_value_surplus(df_cv)
         st.plotly_chart(fig_surp, use_container_width=True, key="cv_surplus")
-        st.caption(
+        chart_caption(
             "**Зелёный** — игрок недооценён (Trade Value выше рыночной зарплаты). "
             "**Красный** — переоценён (зарплата выше реальной ценности)."
         )
@@ -1534,7 +1543,7 @@ elif page == "💵 Контракт":
     with tab_scatter_c:
         fig_cvs = plot_value_vs_salary(df_cv)
         st.plotly_chart(fig_cvs, use_container_width=True, key="cv_scatter")
-        st.caption(
+        chart_caption(
             "Пунктирная линия — «справедливая цена». "
             "Выше линии — ценность выше зарплаты (недооценён). "
             "Ниже — переоценён."
@@ -1543,7 +1552,7 @@ elif page == "💵 Контракт":
     with tab_tiers_c:
         fig_ct = plot_contract_tiers_breakdown(df_cv)
         st.plotly_chart(fig_ct, use_container_width=True, key="cv_tiers")
-        st.caption("Контрактные тиры: распределение игроков по уровням контракта от Max до Minimum.")
+        chart_caption("Контрактные тиры: распределение игроков по уровням контракта от Max до Minimum.")
 
     with tab_player_c:
         cv_player = st.selectbox("Выбери игрока", sorted(df[name_col].dropna().unique()),
@@ -1657,13 +1666,13 @@ elif page == "🔬 Продвинутая аналитика":
         with col_ws1:
             fig_ws = plot_ws_leaderboard(df_adv_f, n=ws_n)
             st.plotly_chart(fig_ws, use_container_width=True, key="ws_leaderboard")
-            st.caption("Win Shares: суммарный вклад игрока в победы команды за сезон. Топ — игроки, на которых держится команда.")
+            chart_caption("Win Shares: суммарный вклад игрока в победы команды за сезон. Топ — игроки, на которых держится команда.")
         with col_ws2:
             fig_vorp = plot_vorp_chart(df_adv_f, n=ws_n)
             st.plotly_chart(fig_vorp, use_container_width=True, key="vorp_scatter")
-            st.caption("VORP vs BPM: Value Over Replacement Player и Box Plus/Minus. Правый верхний угол — MVP-кандидаты.")
+            chart_caption("VORP vs BPM: Value Over Replacement Player и Box Plus/Minus. Правый верхний угол — MVP-кандидаты.")
 
-        st.caption(
+        chart_caption(
             "**BPM** (Box Plus/Minus) — на сколько пунктов лучше команда при игроке на площадке. "
             "**VORP** — дополнительные победы над игроком уровня замены. "
             "**WS** (Win Shares) — доля командных побед, приписываемая игроку."
@@ -1683,7 +1692,7 @@ elif page == "🔬 Продвинутая аналитика":
             wc4.metric("WS/48",    f"{wr.get('ws_per_48', 0):.3f}")
             wc5.metric("WS Off",   f"{wr.get('ws_off', 0):.2f} / Def {wr.get('ws_def', 0):.2f}")
             rank_ws = int((df_adv["win_shares"] > float(wr.get("win_shares", 0))).sum()) + 1
-            st.caption(f"Ранг по Win Shares: **#{rank_ws}** из {len(df_adv)}")
+            chart_caption(f"Ранг по Win Shares: **#{rank_ws}** из {len(df_adv)}")
 
     # ── On/Off Split ─────────────────────────────────────────────────────────
     with tab_onoff:
@@ -1691,7 +1700,7 @@ elif page == "🔬 Продвинутая аналитика":
 
         fig_onoff = plot_on_off_scatter(df_adv)
         st.plotly_chart(fig_onoff, use_container_width=True, key="onoff_scatter")
-        st.caption(
+        chart_caption(
             "**On NET** — рейтинг команды пока игрок на площадке. "
             "**On-Off diff** — насколько команда лучше/хуже с игроком (+= незаменим). "
             "Правый верхний угол — двусторонний импакт."
@@ -1705,7 +1714,7 @@ elif page == "🔬 Продвинутая аналитика":
             oo_row = df_adv[df_adv[name_col] == oo_player].iloc[0]
             fig_oop = plot_on_off_player(oo_row, oo_player)
             st.plotly_chart(fig_oop, use_container_width=True, key=f"oo_player_{oo_player}")
-            st.caption("On/Off по сезонам: динамика влияния игрока на результат команды. Стабильно высокий — системообразующий игрок.")
+            chart_caption("On/Off по сезонам: динамика влияния игрока на результат команды. Стабильно высокий — системообразующий игрок.")
 
             oo1, oo2, oo3 = st.columns(3)
             oo1.metric("На площадке", f"{float(oo_row.get('on_net', 0)):+.1f}")
@@ -1727,7 +1736,7 @@ elif page == "🔬 Продвинутая аналитика":
 
         fig_mom = plot_momentum_leaderboard(df_adv_fm, n=mom_n)
         st.plotly_chart(fig_mom, use_container_width=True, key="mom_leaderboard")
-        st.caption(
+        chart_caption(
             "Momentum учитывает: PIE (30%), Net Rating (25%), Эффективность (20%), "
             "Возраст/пик (15%), USG × Efficiency (10%)."
         )
@@ -1755,12 +1764,12 @@ elif page == "🔬 Продвинутая аналитика":
                 fig_spark = plot_momentum_sparklines(df_adv, mom_player)
                 st.plotly_chart(fig_spark, use_container_width=True,
                                 key=f"mom_spark_{mom_player}")
-                st.caption("Sparkline: миниграфик последних игр — визуальный пульс формы игрока.")
+                chart_caption("Sparkline: миниграфик последних игр — визуальный пульс формы игрока.")
 
     # ── Player Similarity ────────────────────────────────────────────────────
     with tab_sim:
         section_title("Player Similarity", "🔍", "#3498DB")
-        st.caption("Косинусное сходство по 11 статам: очки, передачи, подборы, "
+        chart_caption("Косинусное сходство по 11 статам: очки, передачи, подборы, "
                    "перехваты, блоки, FG%, 3P%, USG%, TS%, +/−, эффективность")
 
         sim_player = st.selectbox("Выбери игрока",
@@ -1804,13 +1813,13 @@ elif page == "🔬 Продвинутая аналитика":
                     fig_rad_s = plot_similarity_radar(df_adv, sim_player, n_similar=n_rad)
                     st.plotly_chart(fig_rad_s, use_container_width=True,
                                     key=f"sim_radar_{sim_player}")
-                    st.caption("Radar похожего игрока: профиль наиболее статистически похожего игрока из базы.")
+                    chart_caption("Radar похожего игрока: профиль наиболее статистически похожего игрока из базы.")
 
                 with tab_heat_sim:
                     fig_heat_s = plot_similarity_heatmap(df_adv, sim_player, n=min(n_sim, 10))
                     st.plotly_chart(fig_heat_s, use_container_width=True,
                                     key=f"sim_heat_{sim_player}")
-                    st.caption("Тепловая карта сходства: насколько близки разные игроки к выбранному по комбинации показателей.")
+                    chart_caption("Тепловая карта сходства: насколько близки разные игроки к выбранному по комбинации показателей.")
             else:
                 st.warning("Недостаточно данных для расчёта сходства.")
 
@@ -1858,7 +1867,7 @@ elif page == "🎲 Monte Carlo":
         from src.monte_carlo import plot_uncertainty_scatter
         st.plotly_chart(plot_uncertainty_scatter(df_mc),
                         use_container_width=True, key="mc_uncert")
-        st.caption(
+        chart_caption(
             "Размер точки — P(All-Star). Ось Y — неопределённость (CV%). "
             "Идеал: правый нижний угол (высокий E[PTS], низкий CV)."
         )
@@ -1882,7 +1891,7 @@ elif page == "🎲 Monte Carlo":
             plot_probability_leaderboard(df_mc, metric=mc_metric, n=top_n_mc),
             use_container_width=True, key="mc_prob_board",
         )
-        st.caption("Рейтинг вероятностей: P(событие) из 8 000 симуляций. Чем выше полоса — тем выше шанс достичь порога.")
+        chart_caption("Рейтинг вероятностей: P(событие) из 8 000 симуляций. Чем выше полоса — тем выше шанс достичь порога.")
 
     with tab_table:
         section_title("Вероятности по всем игрокам", "📋")
@@ -1921,7 +1930,7 @@ elif page == "🎲 Monte Carlo":
                 plot_player_simulation(row_mc, stat=mc_stat),
                 use_container_width=True, key=f"mc_sim_{mc_player}_{mc_stat}",
             )
-            st.caption("Распределение симуляций: гистограмма 8 000 исходов сезона. Центр — наиболее вероятный результат, ширина — неопределённость.")
+            chart_caption("Распределение симуляций: гистограмма 8 000 исходов сезона. Центр — наиболее вероятный результат, ширина — неопределённость.")
             _rp = df_mc[df_mc[name_col_mc] == mc_player]
             if not _rp.empty:
                 rp = _rp.iloc[0]
@@ -1976,7 +1985,7 @@ elif page == "📐 Марковиц":
                                         all_players_df=df_pf),
                 use_container_width=True, key="pf_frontier",
             )
-            st.caption("Граница эффективности: каждая точка — возможный состав. Кривая сверху — оптимальные составы с максимальным TV при заданном риске.")
+            chart_caption("Граница эффективности: каждая точка — возможный состав. Кривая сверху — оптимальные составы с максимальным TV при заданном риске.")
 
     with tab_team:
         section_title("Оптимальный состав", "🏆", color="#E67E22")
@@ -1997,7 +2006,7 @@ elif page == "📐 Марковиц":
             ])
             st.plotly_chart(plot_team_composition(_opt2),
                             use_container_width=True, key="pf_team_comp")
-            st.caption("Состав команды: структура выбранного портфеля игроков по TV-тирам и позициям.")
+            chart_caption("Состав команды: структура выбранного портфеля игроков по TV-тирам и позициям.")
             _nc_pf = "name" if "name" in _opt2.columns else "PLAYER_NAME"
             _show_pf = [c for c in [_nc_pf, "team", "cluster_name",
                                      "trade_value", "tv_tier", "injury_risk",
@@ -2008,7 +2017,7 @@ elif page == "📐 Марковиц":
     with tab_scatter_pf:
         st.plotly_chart(plot_risk_return_scatter(df_pf),
                         use_container_width=True, key="pf_scatter")
-        st.caption(
+        chart_caption(
             "Размер точки — очки за игру. "
             "Ищи правый нижний квадрант: высокий Trade Value + низкий риск травмы."
         )
@@ -2066,7 +2075,7 @@ elif page == "🧮 Байес":
         if _b1:
             st.plotly_chart(plot_shrinkage_dotplot(df_bayes, stat=_b1, n=_n_dot),
                             use_container_width=True, key=f"b_dot_{_b1}")
-            st.caption("🔴 ромб = байесовская оценка  |  ⚪ кружок = наблюдаемое  "
+            chart_caption("🔴 ромб = байесовская оценка  |  ⚪ кружок = наблюдаемое  "
                        "|  синяя линия = 95% credible interval  |  жёлтая = приор")
 
     with tab_scat_b:
@@ -2075,7 +2084,7 @@ elif page == "🧮 Байес":
         if _b2:
             st.plotly_chart(plot_shrinkage_scatter(df_bayes, stat=_b2),
                             use_container_width=True, key=f"b_scat_{_b2}")
-            st.caption("Точки ниже диагонали = регуляризованы вниз. "
+            chart_caption("Точки ниже диагонали = регуляризованы вниз. "
                        "Цвет = степень сжатия к приору.")
 
     with tab_post_b:
@@ -2091,7 +2100,7 @@ elif page == "🧮 Байес":
                     plot_posterior_distribution(_row_b3, stat=_b3),
                     use_container_width=True, key=f"b_post_{_b3_pl}_{_b3}",
                 )
-                st.caption("Доверительные интервалы: 90% байесовский интервал для каждого игрока. Узкий интервал = много данных, широкий = мало игр.")
+                chart_caption("Доверительные интервалы: 90% байесовский интервал для каждого игрока. Узкий интервал = много данных, широкий = мало игр.")
         else:
             st.info("Нет доступных процентных статистик.")
 
@@ -2173,7 +2182,7 @@ elif page == "🕸 Сеть игроков":
                     _sim_mat, _net_names, _net_metrics, max_nodes=_max_nodes
                 )
             st.plotly_chart(_fig_net, use_container_width=True, key="net_graph")
-        st.caption(
+        chart_caption(
             f"Размер узла — PageRank (влияние). Цвет — тип игрока. "
             f"Рёбра — сходство ≥ {SIM_THRESHOLD:.0%}."
         )
@@ -2194,7 +2203,7 @@ elif page == "🕸 Сеть игроков":
             plot_centrality_leaderboard(_net_metrics, metric=_nm_sel, n=_top_n_net),
             use_container_width=True, key="net_central",
         )
-        st.caption(
+        chart_caption(
             "PageRank: высокое значение → игрок находится в центре большого кластера "
             "похожих игроков — его стиль наиболее типичен для лиги."
         )
@@ -2206,7 +2215,7 @@ elif page == "🕸 Сеть игроков":
                 _sim_mat, _net_names, _net_metrics, n=_n_heat_n
             )
         st.plotly_chart(_fig_hnet, use_container_width=True, key="net_heatmap")
-        st.caption("Блоки на диагонали = сообщества игроков схожего стиля.")
+        chart_caption("Блоки на диагонали = сообщества игроков схожего стиля.")
 
 
 # ════════════════════════════════════════════════════════════════════════════════
@@ -2260,7 +2269,7 @@ elif page == "⚰️ Выживаемость":
             plot_km_by_group(_df_surv, group_col="risk_group"),
             use_container_width=True, key="km_risk",
         )
-        st.caption(
+        chart_caption(
             "T₅₀ = медианное время выживаемости. "
             "Чем дольше кривая остаётся высокой — тем дольше пик карьеры."
         )
@@ -2270,7 +2279,7 @@ elif page == "⚰️ Выживаемость":
             plot_km_by_group(_df_surv, group_col="age_group"),
             use_container_width=True, key="km_age",
         )
-        st.caption("Распределение времени до спада: когда обычно наступает карьерный спад для игроков разных архетипов.")
+        chart_caption("Распределение времени до спада: когда обычно наступает карьерный спад для игроков разных архетипов.")
 
     with tab_arch_km:
         if "cluster_name" in _df_surv.columns:
@@ -2278,7 +2287,7 @@ elif page == "⚰️ Выживаемость":
                 plot_km_by_group(_df_surv, group_col="cluster_name"),
                 use_container_width=True, key="km_cluster",
             )
-            st.caption("Факторы выживаемости по группам: сравнение кривых для разных категорий игроков.")
+            chart_caption("Факторы выживаемости по группам: сравнение кривых для разных категорий игроков.")
         else:
             st.info("Данные кластеров недоступны.")
 
@@ -2290,11 +2299,11 @@ elif page == "⚰️ Выживаемость":
                     plot_cox_forest(_cox_df),
                     use_container_width=True, key="cox_forest",
                 )
-                st.caption("Cox Forest Plot: Hazard Ratio факторов риска (лог-шкала). HR > 1 = ускоряет спад, HR < 1 = защищает. Точка — оценка, линия — 95% интервал.")
+                chart_caption("Cox Forest Plot: Hazard Ratio факторов риска (лог-шкала). HR > 1 = ускоряет спад, HR < 1 = защищает. Точка — оценка, линия — 95% интервал.")
             with col_cx2:
                 section_title("Hazard Ratios", "📋", color="#E74C3C")
                 st.dataframe(_cox_df, use_container_width=True)
-                st.caption(
+                chart_caption(
                     "HR > 1.1 → увеличивает риск спада.  \n"
                     "HR < 0.9 → снижает риск.  \n"
                     "95% CI не должен включать HR=1 для значимости."
@@ -2307,7 +2316,7 @@ elif page == "⚰️ Выживаемость":
             plot_survival_heatmap(_df_surv),
             use_container_width=True, key="surv_heatmap",
         )
-        st.caption(
+        chart_caption(
             "Медиана симулированного времени до снижения эффективности "
             "по группам возраста и риска."
         )
@@ -2686,3 +2695,4 @@ elif page == "🔄 AI Трейд":
                 mime="text/plain",
                 key=f"tr_dl_{_ti}",
             )
+
